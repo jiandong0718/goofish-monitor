@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title }} · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/" class="{% if active_nav == 'overview' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks" class="{% if active_nav == 'tasks' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts" class="{% if active_nav == 'accounts' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results" class="{% if active_nav == 'results' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs" class="{% if active_nav == 'logs' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings" class="{% if active_nav == 'settings' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+            </span>
+            <h1>{{ page_title }}</h1>
+          </div>
+          <p class="subtitle">{{ page_subtitle }}</p>
+        </div>
+        <a class="btn-secondary" href="/">← 返回概览</a>
+      </header>
+
+      <section class="panel">
+        <form class="log-filters" method="get" data-strip-empty-query="1" action="/logs">
+          <label>
+            级别
+            <select name="level">
+              <option value="" {% if not filter_level %}selected{% endif %}>全部</option>
+              <option value="info" {% if filter_level == 'info' %}selected{% endif %}>info</option>
+              <option value="warn" {% if filter_level == 'warn' %}selected{% endif %}>warn</option>
+              <option value="error" {% if filter_level == 'error' %}selected{% endif %}>error</option>
+            </select>
+          </label>
+          <label>
+            任务 ID
+            <input type="number" name="task_id" min="1" placeholder="可选"
+                   value="{{ filter_task_id if filter_task_id is not none else '' }}" />
+          </label>
+          <button type="submit" class="btn-primary" style="box-shadow:none;padding:8px 14px;">筛选</button>
+          <a class="btn-secondary" href="/logs" style="padding:8px 12px;">重置</a>
+        </form>
+
+        {% if items %}
+        <div class="log-table-wrap">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>级别</th>
+                <th>事件</th>
+                <th>消息</th>
+                <th>任务</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in items %}
+              <tr class="log-row level-{{ it.level }}">
+                <td class="mono" title="{{ it.time }}">{{ it.time_short }}</td>
+                <td>
+                  <span class="badge level-{{ it.level }}">{{ it.level }}</span>
+                </td>
+                <td>
+                  <span class="event-pill">{{ it.event_label }}</span>
+                  <div class="event-code">{{ it.event }}</div>
+                </td>
+                <td class="msg">{{ it.message }}</td>
+                <td>
+                  {% if it.task_id %}
+                    <a href="/logs?task_id={{ it.task_id }}">#{{ it.task_id }}</a>
+                    {% if it.task_label %}<div class="muted-sm">{{ it.task_label }}</div>{% endif %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-panel">{{ empty_hint or "暂无运行日志" }}</div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('form[data-strip-empty-query]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+          form.querySelectorAll('input, select, textarea').forEach(function (el) {
+            if (!el.name) return;
+            if (el.disabled) return;
+            var v = (el.value || '').trim();
+            if (v === '') el.disabled = true; // omitted from query string
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

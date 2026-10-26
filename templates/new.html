@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>开始新监测 · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+            <h1>开始新监测</h1>
+          </div>
+          <p class="subtitle">填写关键词与筛选条件，创建商品配置；可选立即启动监控任务。</p>
+        </div>
+        <div class="head-actions">
+          <a class="btn-secondary" href="/">← 返回概览</a>
+          <a class="btn-secondary" href="/tasks">任务管理</a>
+        </div>
+      </header>
+
+      <form id="new-monitor-form" class="config-form" novalidate>
+        <section class="panel form-section">
+          <div class="panel-head">
+            <div>
+              <h2>基本信息</h2>
+              <p class="desc">配置名称与搜索关键词（必填）。</p>
+            </div>
+          </div>
+          <div class="form-grid cols-2">
+            <label class="span-2">
+              配置名称 <span class="req">*</span>
+              <input type="text" name="name" id="f-name" maxlength="128" required
+                     placeholder="例如：MacBook Air M2 捡漏" />
+            </label>
+            <label class="span-2">
+              主关键词 <span class="req">*</span>
+              <input type="text" name="keyword" id="f-keyword" maxlength="256" required
+                     placeholder="例如：MacBook Air M2" />
+            </label>
+            <label class="span-2">
+              关键词变体
+              <input type="text" name="keyword_variants" id="f-keyword-variants"
+                     placeholder="逗号分隔，例如：MBA M2, 苹果笔记本 Air" />
+              <span class="field-hint">可选；多个用英文或中文逗号分隔</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel form-section">
+          <div class="panel-head">
+            <div>
+              <h2>价格与卖家</h2>
+              <p class="desc">预算区间、卖家偏好与排除词。</p>
+            </div>
+          </div>
+          <div class="form-grid cols-3">
+            <label>
+              最低价（元）
+              <input type="number" name="price_min" id="f-price-min" min="0" step="1"
+                     placeholder="可选" />
+            </label>
+            <label>
+              最高价（元）
+              <input type="number" name="price_max" id="f-price-max" min="0" step="1"
+                     placeholder="例如：5500" />
+            </label>
+            <label>
+              卖家偏好
+              <select name="seller_preference" id="f-seller">
+                <option value="any" selected>不限</option>
+                <option value="personal_only">仅个人卖家</option>
+              </select>
+            </label>
+            <label class="span-3">
+              排除关键词
+              <input type="text" name="exclude_keywords" id="f-exclude"
+                     placeholder="逗号分隔，例如：碎屏, 进水, 官换" />
+              <span class="field-hint">标题含这些词的帖子将被过滤</span>
+            </label>
+            <label>
+              默认排序
+              <select name="sort_default" id="f-sort">
+                <option value="newest" selected>新发布（捡漏）</option>
+                <option value="price_asc">价格从低到高</option>
+                <option value="price_desc">价格从高到低</option>
+                <option value="relevance">综合相关</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel form-section">
+          <div class="panel-head">
+            <div>
+              <h2>规格硬条件</h2>
+              <p class="desc">型号 / 尺寸 / 内存 / 存储；会写入配置字段，并同步到 hard_requirements。</p>
+            </div>
+          </div>
+          <div class="form-grid cols-4">
+            <label>
+              型号
+              <input type="text" name="model" id="f-model" placeholder="例如：Air M2" />
+            </label>
+            <label>
+              尺寸
+              <input type="text" name="size" id="f-size" placeholder="例如：13.6" />
+            </label>
+            <label>
+              内存
+              <input type="text" name="ram" id="f-ram" placeholder="例如：16GB" />
+            </label>
+            <label>
+              存储
+              <input type="text" name="storage" id="f-storage" placeholder="例如：512GB" />
+            </label>
+            <label class="span-4">
+              额外硬条件（JSON，可选）
+              <textarea name="hard_requirements_json" id="f-hard-json" rows="3"
+                        placeholder='{"battery_health_min": 85, "condition": "几乎全新"}'></textarea>
+              <span class="field-hint">合法 JSON 对象；与上方规格合并（规格字段优先）</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="panel form-section">
+          <div class="panel-head">
+            <div>
+              <h2>调度任务</h2>
+              <p class="desc">创建配置后自动绑定监控任务；勾选即可立即开始轮询。</p>
+            </div>
+          </div>
+          <div class="form-grid cols-3">
+            <label>
+              轮询间隔（分钟）
+              <input type="number" name="interval_minutes" id="f-interval"
+                     min="1" max="1440" value="30" required />
+            </label>
+            <label class="checkbox-label span-2">
+              <input type="checkbox" name="start_immediately" id="f-start" checked />
+              <span>
+                <strong>立即开始监测</strong>
+                <span class="field-hint" style="display:block;margin-top:2px;">
+                  勾选后任务状态为「运行中」；取消则创建为「已暂停」
+                </span>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <div class="form-footer">
+          <p class="form-error" id="form-error" hidden></p>
+          <div class="form-footer-actions">
+            <a class="btn-secondary" href="/">取消</a>
+            <button type="submit" class="btn-primary" id="btn-submit">创建并保存</button>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+  <script>
+  (function () {
+    const form = document.getElementById("new-monitor-form");
+    const errEl = document.getElementById("form-error");
+    const btn = document.getElementById("btn-submit");
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+
+    function toast(msg, ok) {
+      toastEl.textContent = msg;
+      toastEl.className = "toast " + (ok ? "ok" : "err");
+      toastEl.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.hidden = true; }, 4200);
+    }
+
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.hidden = !msg;
+    }
+
+    function splitCsv(text) {
+      if (!text || !String(text).trim()) return [];
+      return String(text)
+        .split(/[,，、]+/)
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean);
+    }
+
+    function optFloat(id) {
+      const v = document.getElementById(id).value;
+      if (v === "" || v == null) return null;
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function optStr(id) {
+      const v = (document.getElementById(id).value || "").trim();
+      return v || null;
+    }
+
+    async function api(method, url, body) {
+      const opts = { method: method, headers: { "Accept": "application/json" } };
+      if (body !== undefined) {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+      const res = await fetch(url, opts);
+      let data = null;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.indexOf("json") >= 0) {
+        try { data = await res.json(); } catch (e) { data = null; }
+      }
+      if (!res.ok) {
+        let detail = data && (data.detail || data.error_message || data.error);
+        if (Array.isArray(detail)) {
+          detail = detail.map(function (d) {
+            return (d.loc ? d.loc.join(".") + ": " : "") + (d.msg || JSON.stringify(d));
+          }).join("; ");
+        }
+        throw new Error(typeof detail === "string" ? detail : ("HTTP " + res.status));
+      }
+      return data;
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      showError("");
+
+      const name = (document.getElementById("f-name").value || "").trim();
+      const keyword = (document.getElementById("f-keyword").value || "").trim();
+      if (!name) { showError("请填写配置名称"); toast("请填写配置名称", false); return; }
+      if (!keyword) { showError("请填写主关键词"); toast("请填写主关键词", false); return; }
+
+      const priceMin = optFloat("f-price-min");
+      const priceMax = optFloat("f-price-max");
+      if (priceMin != null && priceMax != null && priceMin > priceMax) {
+        showError("最低价不能高于最高价");
+        toast("最低价不能高于最高价", false);
+        return;
+      }
+
+      let hardExtra = {};
+      const hardRaw = (document.getElementById("f-hard-json").value || "").trim();
+      if (hardRaw) {
+        try {
+          const parsed = JSON.parse(hardRaw);
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new Error("须为 JSON 对象");
+          }
+          hardExtra = parsed;
+        } catch (err) {
+          showError("硬条件 JSON 无效：" + err.message);
+          toast("硬条件 JSON 无效", false);
+          return;
+        }
+      }
+
+      const model = optStr("f-model");
+      const size = optStr("f-size");
+      const ram = optStr("f-ram");
+      const storage = optStr("f-storage");
+      const hard = Object.assign({}, hardExtra);
+      if (model) hard.model = model;
+      if (size) hard.size = size;
+      if (ram) hard.ram = ram;
+      if (storage) hard.storage = storage;
+
+      const interval = parseInt(document.getElementById("f-interval").value, 10);
+      if (!interval || interval < 1 || interval > 1440) {
+        showError("轮询间隔须在 1–1440 分钟");
+        toast("轮询间隔无效", false);
+        return;
+      }
+
+      const startNow = document.getElementById("f-start").checked;
+      const configBody = {
+        name: name,
+        keyword: keyword,
+        keyword_variants: splitCsv(document.getElementById("f-keyword-variants").value),
+        model: model,
+        size: size,
+        ram: ram,
+        storage: storage,
+        price_min: priceMin,
+        price_max: priceMax,
+        seller_preference: document.getElementById("f-seller").value || "any",
+        exclude_keywords: splitCsv(document.getElementById("f-exclude").value),
+        sort_default: document.getElementById("f-sort").value || "newest",
+        hard_requirements: hard,
+        soft_preferences: {},
+        enabled: true
+      };
+
+      btn.disabled = true;
+      btn.textContent = "创建中…";
+      try {
+        const cfg = await api("POST", "/api/configs", configBody);
+        const task = await api("POST", "/api/tasks", {
+          config_id: cfg.id,
+          interval_minutes: interval,
+          status: startNow ? "running" : "paused"
+        });
+        toast(
+          startNow
+            ? "已创建配置 #" + cfg.id + " 并启动任务 #" + task.id
+            : "已创建配置 #" + cfg.id + " 与任务 #" + task.id + "（已暂停）",
+          true
+        );
+        const flash = startNow ? "started" : "created";
+        setTimeout(function () {
+          location.href = "/tasks?flash=" + encodeURIComponent(flash) +
+            "&config_id=" + cfg.id + "&task_id=" + task.id;
+        }, 700);
+      } catch (err) {
+        showError("创建失败：" + err.message);
+        toast("创建失败：" + err.message, false);
+        btn.disabled = false;
+        btn.textContent = "创建并保存";
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>任务管理 · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks" class="active">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
+            <h1>任务管理</h1>
+          </div>
+          <p class="subtitle">启停监控任务、调整轮询间隔，或立即执行一轮采集。</p>
+        </div>
+        <div class="head-actions">
+          <a class="btn-secondary" href="/">← 返回概览</a>
+          <button type="button" class="btn-primary" id="btn-open-create">＋ 创建任务</button>
+        </div>
+      </header>
+
+      <section class="stats" aria-label="任务概览" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+          <div>
+            <div class="label">全部任务</div>
+            <div class="value">{{ total_tasks }}</div>
+          </div>
+          <span class="stat-icon blue" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">运行中</div>
+            <div class="value">{{ running_tasks }}</div>
+          </div>
+          <span class="stat-icon green" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M10 8l6 4-6 4V8z"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">已暂停 / 异常</div>
+            <div class="value">{{ paused_tasks }}</div>
+          </div>
+          <span class="stat-icon yellow" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </span>
+        </div>
+      </section>
+
+      <section class="panel create-panel" id="create-panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>创建监控任务</h2>
+            <p class="desc">选择已有商品配置与轮询间隔。新任务默认「已暂停」，可手动启动。</p>
+          </div>
+          <button type="button" class="btn-secondary btn-sm" id="btn-close-create">收起</button>
+        </div>
+        <form id="create-form" class="create-form">
+          <label>
+            商品配置
+            <select name="config_id" id="create-config" required>
+              <option value="">请选择配置…</option>
+              {% for c in configs %}
+              <option value="{{ c.id }}">#{{ c.id }} · {{ c.name }}（{{ c.keyword }}）</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            间隔（分钟）
+            <input type="number" name="interval_minutes" id="create-interval" min="1" max="1440" value="30" required />
+          </label>
+          <label>
+            初始状态
+            <select name="status" id="create-status">
+              <option value="paused" selected>已暂停</option>
+              <option value="running">运行中</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">创建</button>
+            {% if not configs %}
+            <span class="form-hint">暂无配置，请先 <a href="/new">开始新监测</a> 创建商品配置。</span>
+            {% endif %}
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>任务列表</h2>
+            <p class="desc">共 {{ total_tasks }} 个任务 · 操作直接调用 <code>/api/tasks</code></p>
+          </div>
+        </div>
+
+        {% if items %}
+        <div class="task-table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>配置 / 关键词</th>
+                <th>状态</th>
+                <th>间隔</th>
+                <th>最近运行</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in items %}
+              <tr data-task-id="{{ it.id }}" data-status="{{ it.status }}">
+                <td class="mono">#{{ it.id }}</td>
+                <td>
+                  <div class="task-name">{{ it.config_name }}</div>
+                  <div class="muted-sm">{{ it.keyword }} · 配置 #{{ it.config_id }}</div>
+                  {% if it.error_message %}
+                  <div class="err-msg" title="{{ it.error_message }}">⚠ {{ it.error_message }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if it.status == "running" %}
+                  <span class="badge running">运行中</span>
+                  {% elif it.status == "error" %}
+                  <span class="badge error">异常</span>
+                  {% else %}
+                  <span class="badge paused">已暂停</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <form class="inline-interval" data-task-id="{{ it.id }}">
+                    <input type="number" class="interval-input" min="1" max="1440"
+                           value="{{ it.interval_minutes }}" aria-label="间隔分钟" />
+                    <span class="unit">分</span>
+                    <button type="submit" class="btn-ghost btn-sm" title="保存间隔">保存</button>
+                  </form>
+                </td>
+                <td class="mono">
+                  {% if it.last_run_at %}
+                    <span title="{{ it.last_run_at }}">{{ it.last_run_relative or it.last_run_at }}</span>
+                    <div class="muted-sm">{{ it.last_run_at }}</div>
+                  {% else %}
+                    <span class="muted-sm">尚未运行</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-bar">
+                    {% if it.status == "running" %}
+                    <button type="button" class="btn-secondary btn-sm" data-action="pause" data-id="{{ it.id }}">暂停</button>
+                    {% else %}
+                    <button type="button" class="btn-primary btn-sm" data-action="resume" data-id="{{ it.id }}" style="box-shadow:none;padding:6px 10px;">启动</button>
+                    {% endif %}
+                    <button type="button" class="btn-secondary btn-sm" data-action="run-once" data-id="{{ it.id }}">立即执行</button>
+                    <a class="btn-ghost btn-sm" href="/logs?task_id={{ it.id }}">日志</a>
+                    <a class="btn-ghost btn-sm" href="/results?task_id={{ it.id }}">结果</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-panel">
+          {{ empty_hint or "暂无任务。点击右上角「创建任务」或通过 API 创建。" }}
+        </div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+  <script>
+  (function () {
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+
+    function toast(msg, ok) {
+      toastEl.textContent = msg;
+      toastEl.className = "toast " + (ok ? "ok" : "err");
+      toastEl.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.hidden = true; }, 4200);
+    }
+
+    async function api(method, url, body) {
+      const opts = { method: method, headers: { "Accept": "application/json" } };
+      if (body !== undefined) {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+      const res = await fetch(url, opts);
+      let data = null;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.indexOf("json") >= 0) {
+        try { data = await res.json(); } catch (e) { data = null; }
+      }
+      if (!res.ok) {
+        const detail = data && (data.detail || data.error_message || data.error);
+        throw new Error(typeof detail === "string" ? detail : ("HTTP " + res.status));
+      }
+      return data;
+    }
+
+    const createPanel = document.getElementById("create-panel");
+    document.getElementById("btn-open-create").addEventListener("click", function () {
+      createPanel.hidden = false;
+      createPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    document.getElementById("btn-close-create").addEventListener("click", function () {
+      createPanel.hidden = true;
+    });
+
+    document.getElementById("create-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const configId = parseInt(document.getElementById("create-config").value, 10);
+      const interval = parseInt(document.getElementById("create-interval").value, 10);
+      const status = document.getElementById("create-status").value;
+      if (!configId) { toast("请选择商品配置", false); return; }
+      try {
+        await api("POST", "/api/tasks", {
+          config_id: configId,
+          interval_minutes: interval,
+          status: status
+        });
+        toast("任务已创建", true);
+        setTimeout(function () { location.reload(); }, 600);
+      } catch (err) {
+        toast("创建失败：" + err.message, false);
+      }
+    });
+
+    document.querySelectorAll(".inline-interval").forEach(function (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const id = form.getAttribute("data-task-id");
+        const input = form.querySelector(".interval-input");
+        const minutes = parseInt(input.value, 10);
+        if (!minutes || minutes < 1 || minutes > 1440) {
+          toast("间隔须在 1–1440 分钟", false);
+          return;
+        }
+        try {
+          await api("PUT", "/api/tasks/" + id, { interval_minutes: minutes });
+          toast("间隔已更新为 " + minutes + " 分钟", true);
+        } catch (err) {
+          toast("更新失败：" + err.message, false);
+        }
+      });
+    });
+
+    document.querySelectorAll("[data-action]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        const action = btn.getAttribute("data-action");
+        const id = btn.getAttribute("data-id");
+        btn.disabled = true;
+        try {
+          if (action === "pause") {
+            await api("POST", "/api/tasks/" + id + "/pause");
+            toast("任务 #" + id + " 已暂停", true);
+            setTimeout(function () { location.reload(); }, 500);
+          } else if (action === "resume") {
+            await api("POST", "/api/tasks/" + id + "/resume");
+            toast("任务 #" + id + " 已启动", true);
+            setTimeout(function () { location.reload(); }, 500);
+          } else if (action === "run-once") {
+            toast("正在执行任务 #" + id + "…", true);
+            const result = await api("POST", "/api/tasks/" + id + "/run-once");
+            if (result && result.ok) {
+              toast(
+                "完成：抓取 " + (result.fetched || 0) +
+                " · 新增 " + (result.inserted || 0) +
+                " · 更新 " + (result.updated || 0) +
+                " · 评估 " + (result.evaluated || 0),
+                true
+              );
+              setTimeout(function () { location.reload(); }, 1200);
+            } else {
+              const msg = (result && (result.error_message || result.error)) || "执行失败";
+              toast(msg, false);
+            }
+          }
+        } catch (err) {
+          toast("操作失败：" + err.message, false);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
+    // Flash from /new redirect
+    (function showFlash() {
+      const params = new URLSearchParams(location.search);
+      const flash = params.get("flash");
+      if (!flash) return;
+      const cfg = params.get("config_id");
+      const tid = params.get("task_id");
+      let msg = "操作成功";
+      if (flash === "started") {
+        msg = "监测已创建并启动" + (tid ? ("（任务 #" + tid + "）") : "");
+      } else if (flash === "created") {
+        msg = "配置与任务已创建（已暂停）" + (tid ? ("（任务 #" + tid + "）") : "");
+      } else if (flash === "config_created") {
+        msg = "商品配置已创建" + (cfg ? ("（#" + cfg + "）") : "");
+      }
+      toast(msg, true);
+      if (window.history && history.replaceState) {
+        const url = location.pathname;
+        history.replaceState({}, "", url);
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>

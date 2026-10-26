@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>结果查看 · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results" class="active">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            </span>
+            <h1>结果查看</h1>
+          </div>
+          <p class="subtitle">{{ page_subtitle }}</p>
+        </div>
+        <a class="btn-secondary" href="/">← 返回概览</a>
+      </header>
+
+      <section class="stats" aria-label="评估统计" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="stat-card">
+          <div>
+            <div class="label">全部评估</div>
+            <div class="value">{{ counts.total }}</div>
+          </div>
+          <span class="stat-icon blue" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">推荐</div>
+            <div class="value">{{ counts.recommend }}</div>
+          </div>
+          <span class="stat-icon green" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">待观察</div>
+            <div class="value">{{ counts.watch }}</div>
+          </div>
+          <span class="stat-icon yellow" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">不推荐</div>
+            <div class="value">{{ counts.reject }}</div>
+          </div>
+          <span class="stat-icon purple" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <form class="log-filters" method="get" data-strip-empty-query="1" action="/results">
+          <label>
+            结论
+            <select name="verdict">
+              <option value="" {% if not filter_verdict %}selected{% endif %}>全部</option>
+              <option value="推荐" {% if filter_verdict == '推荐' %}selected{% endif %}>推荐</option>
+              <option value="待观察" {% if filter_verdict == '待观察' %}selected{% endif %}>待观察</option>
+              <option value="不推荐" {% if filter_verdict == '不推荐' %}selected{% endif %}>不推荐</option>
+            </select>
+          </label>
+          <label>
+            任务 ID
+            <input type="number" name="task_id" min="1" placeholder="可选"
+                   value="{{ filter_task_id if filter_task_id is not none else '' }}" />
+          </label>
+          <button type="submit" class="btn-primary" style="box-shadow:none;padding:8px 14px;">筛选</button>
+          <a class="btn-secondary" href="/results" style="padding:8px 12px;">重置</a>
+        </form>
+
+        {% if items %}
+        <div class="result-grid">
+          {% for it in items %}
+          <article class="result-card verdict-{{ it.verdict_key }}">
+            <div class="result-card-top">
+              {% if it.verdict == "推荐" %}
+              <span class="badge running">推荐</span>
+              {% elif it.verdict == "待观察" %}
+              <span class="badge level-warn">待观察</span>
+              {% elif it.verdict == "不推荐" %}
+              <span class="badge error">不推荐</span>
+              {% else %}
+              <span class="badge paused">{{ it.verdict or "—" }}</span>
+              {% endif %}
+              <span class="analyzer-pill">{{ it.analyzer_label }}</span>
+              {% if it.score is not none %}
+              <span class="score-pill">评分 {{ "%.0f"|format(it.score) }}</span>
+              {% endif %}
+            </div>
+            <h3 class="result-title" title="{{ it.title_full }}">{{ it.title }}</h3>
+            <div class="result-meta">
+              <span class="price">{% if it.price is not none %}¥{{ "%.0f"|format(it.price) }}{% else %}价格未知{% endif %}</span>
+              {% if it.seller_type %}<span class="meta-sep">·</span><span>{{ it.seller_type }}</span>{% endif %}
+              {% if it.condition %}<span class="meta-sep">·</span><span>{{ it.condition }}</span>{% endif %}
+              <span class="meta-sep">·</span>
+              <span class="muted-sm">{{ it.created_at or "—" }}</span>
+            </div>
+            {% if it.reason %}
+            <p class="result-reason">{{ it.reason }}</p>
+            {% endif %}
+            {% if it.tags %}
+            <div class="tag-row">
+              {% for t in it.tags %}
+              <span class="chip muted">{{ t }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="result-actions">
+              {% if it.url %}
+              <a class="btn-primary btn-sm" href="{{ it.url }}" target="_blank" rel="noopener noreferrer" style="box-shadow:none;">打开链接</a>
+              {% endif %}
+              {% if it.listing_id %}
+              <a class="btn-ghost btn-sm" href="/api/listings/{{ it.listing_id }}" target="_blank">Listing #{{ it.listing_id }}</a>
+              {% endif %}
+              {% if it.task_id %}
+              <a class="btn-ghost btn-sm" href="/tasks">任务 #{{ it.task_id }}</a>
+              {% endif %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-panel">{{ empty_hint or "暂无评估结果" }}</div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      document.querySelectorAll('form[data-strip-empty-query]').forEach(function (form) {
+        form.addEventListener('submit', function () {
+          form.querySelectorAll('input, select, textarea').forEach(function (el) {
+            if (!el.name) return;
+            if (el.disabled) return;
+            var v = (el.value || '').trim();
+            if (v === '') el.disabled = true; // omitted from query string
+          });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

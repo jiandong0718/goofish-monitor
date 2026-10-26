@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>监控概览 · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/" class="active">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </span>
+            <h1>监控概览</h1>
+          </div>
+          <p class="subtitle">这里展示任务、结果与最近活动的真实汇总。</p>
+        </div>
+        <a class="btn-primary" href="/new">＋ 开始新监测</a>
+      </header>
+
+      <section class="stats" aria-label="关键指标">
+        <div class="stat-card">
+          <div>
+            <div class="label">活动任务</div>
+            <div class="value">{{ running_tasks }}</div>
+            <div class="hint">运行中 {{ running_tasks }} 个</div>
+          </div>
+          <span class="stat-icon blue" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">已扫描商品</div>
+            <div class="value">{{ listings_count }}</div>
+            <div class="hint">结果文件 {{ result_files }} 个</div>
+          </div>
+          <span class="stat-icon green" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">已发现推荐</div>
+            <div class="value">{{ recommend_count }}</div>
+            <div class="hint">AI {{ ai_recommend }} / 关键词 {{ kw_recommend }}</div>
+          </div>
+          <span class="stat-icon yellow" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+          </span>
+        </div>
+        <div class="stat-card">
+          <div>
+            <div class="label">监测任务</div>
+            <div class="value">{{ total_tasks }}</div>
+            <div class="hint">当前展示全部任务</div>
+          </div>
+          <span class="stat-icon purple" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>
+          </span>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <div class="col-main">
+          {% if featured %}
+          <section class="panel" aria-label="任务详情">
+            <div class="panel-head">
+              <div>
+                <h2>{{ featured.keyword or featured.config_name or ("任务 #" ~ featured.id) }}</h2>
+                <p class="desc">
+                  关键词：{{ featured.keyword or "—" }}，当前累计 {{ featured.listing_count }} 条结果样本。
+                </p>
+              </div>
+              <span class="chip">最近更新 {{ featured.last_run_relative }}</span>
+            </div>
+
+            <div class="price-row">
+              <div class="price-box">
+                <div class="k">当前样本均价</div>
+                <div class="v">
+                  {% if featured.avg_price is not none %}¥{{ "%.2f"|format(featured.avg_price) }}{% else %}—{% endif %}
+                </div>
+                <div class="s">样本 {{ featured.sample_count }} 条</div>
+              </div>
+              <div class="price-box">
+                <div class="k">历史均价</div>
+                <div class="v">
+                  {% if featured.historical_avg is not none %}¥{{ "%.2f"|format(featured.historical_avg) }}{% else %}—{% endif %}
+                </div>
+                <div class="s">唯一商品 {{ featured.unique_count }} 个</div>
+              </div>
+              <div class="price-box">
+                <div class="k">市场均价</div>
+                <div class="v">
+                  {% if featured.price_max is not none %}¥{{ "%.0f"|format(featured.price_max) }}{% else %}—{% endif %}
+                </div>
+                <div class="s">
+                  {% if featured.price_max is not none %}
+                    预算上限{% if featured.price_min is not none %} · 最低 ¥{{ "%.0f"|format(featured.price_min) }}{% endif %}
+                  {% else %}
+                    暂无市场参考价
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-block">
+              <div class="chart-title">DAILY PRICE CURVE</div>
+              <div class="chart-legend">
+                <span class="lg"><span class="dot-avg"></span>均价</span>
+                <span class="lg"><span class="dot-med"></span>中位数</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="priceChart" aria-label="日均价曲线"></canvas>
+                {% if not featured.daily_curve %}
+                <div class="chart-empty" id="chartEmpty">
+                  <strong>暂无日均价数据</strong>
+                  <span>采集样本带时间戳后将在此绘制曲线</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </section>
+          {% else %}
+          <section class="panel">
+            <div class="empty-panel">
+              暂无监控任务。请 <a href="/new">开始新监测</a> 或通过 <a href="/docs">/docs</a> 创建配置与任务。
+            </div>
+          </section>
+          {% endif %}
+        </div>
+
+        <div class="col-side">
+          <section class="panel" aria-label="实时动态">
+            <h3 class="section-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              实时动态
+            </h3>
+            {% if feed %}
+            <ul class="feed-list">
+              {% for item in feed %}
+              <li class="feed-item">
+                <span class="feed-dot"></span>
+                <div class="feed-body">
+                  <div class="feed-title">{{ item.title }}</div>
+                  <div class="feed-sub">{{ item.sub }}</div>
+                </div>
+                <span class="feed-tag {{ item.tag_class }}">{{ item.tag }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-panel" style="padding:20px 8px;">暂无动态</div>
+            {% endif %}
+            <div class="panel-foot">
+              <a href="/logs">查看全部日志 →</a>
+            </div>
+          </section>
+
+          <section class="panel" aria-label="AI 智能策略">
+            <h3 class="section-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.2-2.5 5.5-.7.7-1.2 1.5-1.4 2.5H8.9c-.2-1-.7-1.8-1.4-2.5C6.3 13.2 5 11.5 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/></svg>
+              AI 智能策略
+            </h3>
+            <div class="strategy-box">
+              <div class="sh">{{ strategy.headline }}</div>
+              <div class="sb">{{ strategy.body }}</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    window.__PRICE_CURVE__ = {{ curve_json | safe }};
+    document.addEventListener("DOMContentLoaded", function () {
+      var data = window.__PRICE_CURVE__ || [];
+      var canvas = document.getElementById("priceChart");
+      if (!canvas || typeof Chart === "undefined") return;
+      if (!data.length) return;
+
+      var labels = data.map(function (d) { return d.date; });
+      var avgs = data.map(function (d) { return d.avg; });
+      var meds = data.map(function (d) { return d.median; });
+
+      new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "均价",
+              data: avgs,
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37,99,235,0.12)",
+              pointBackgroundColor: "#2563eb",
+              pointRadius: 4,
+              tension: 0.25,
+              fill: false
+            },
+            {
+              label: "中位数",
+              data: meds,
+              borderColor: "#f59e0b",
+              backgroundColor: "rgba(245,158,11,0.08)",
+              pointBackgroundColor: "#f59e0b",
+              pointRadius: 4,
+              tension: 0.25,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  return ctx.dataset.label + ": ¥" + Number(ctx.parsed.y).toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: "#94a3b8", font: { size: 11 } }
+            },
+            y: {
+              grid: { color: "#e8eef6", drawBorder: false },
+              ticks: {
+                color: "#94a3b8",
+                font: { size: 11 },
+                callback: function (v) { return "¥" + v; }
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+  <script>
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const flash = params.get("flash");
+    if (!flash) return;
+    const el = document.getElementById("toast");
+    el.textContent = flash === "started" ? "监测已创建并启动" : (flash === "created" ? "配置与任务已创建" : "操作成功");
+    el.className = "toast ok";
+    el.hidden = false;
+    setTimeout(function () { el.hidden = true; }, 4200);
+    if (history.replaceState) history.replaceState({}, "", location.pathname);
+  })();
+  </script>
+</body>
+</html>

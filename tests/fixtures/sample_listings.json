@@ -1,0 +1,32 @@
+[
+  {
+    "external_id": "fixture-mb-001",
+    "title": "MacBook Air M2 16G 512G 午夜色 95新个人闲置",
+    "price": 5200,
+    "url": "https://www.goofish.com/item?id=fixture-mb-001",
+    "published_at": "2026-10-26T08:00:00",
+    "seller_type": "personal",
+    "condition": "95新",
+    "raw": {"source": "fixture", "keyword": "MacBook Air M2"}
+  },
+  {
+    "external_id": "fixture-mb-002",
+    "title": "苹果 MacBook Pro M2 16寸 32G 1T 成色好",
+    "price": 8900,
+    "url": "https://www.goofish.com/item?id=fixture-mb-002",
+    "published_at": "2026-10-26T09:30:00",
+    "seller_type": "personal",
+    "condition": "几乎全新",
+    "raw": {"source": "fixture", "keyword": "MacBook Pro M2"}
+  },
+  {
+    "external_id": "fixture-mb-003",
+    "title": "MacBook Air M1 8G 256G 碎屏维修机低价出",
+    "price": 2800,
+    "url": "https://www.goofish.com/item?id=fixture-mb-003",
+    "published_at": "2026-10-25T20:00:00",
+    "seller_type": "any",
+    "condition": "维修机",
+    "raw": {"source": "fixture", "keyword": "MacBook Air M1", "note": "exclude-keyword candidate"}
+  }
+]

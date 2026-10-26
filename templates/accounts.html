@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>账号管理 · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <style>
+    .status-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 800px) {
+      .status-card { grid-template-columns: 1fr; }
+    }
+    .kv {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .kv .k { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+    .kv .v { font-size: 0.95rem; font-weight: 600; word-break: break-all; }
+    .steps {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .steps code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      background: #f1f5f9;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .pre-cmd {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      margin: 12px 0 0;
+    }
+    .banner {
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+    }
+    .banner.ok { background: var(--ok-bg); color: #065f46; }
+    .banner.warn { background: var(--warn-bg); color: #92400e; }
+    .banner.bad { background: var(--bad-bg); color: #991b1b; }
+    .banner.info { background: var(--primary-soft); color: #1e3a8a; }
+    .row-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>监控概览</a>
+        <a href="/tasks"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>任务管理</a>
+        <a href="/accounts" class="active"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>账号管理</a>
+        <a href="/results"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></span>结果查看</a>
+        <a href="/logs"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg></span>运行日志</a>
+        <a href="/settings"><span class="ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>系统设置</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <h1>账号管理</h1>
+          </div>
+          <p class="subtitle">闲鱼采集使用 Playwright 持久化浏览器配置（非 Cookie 导出）。首次在有桌面环境登录一次即可定时真扫。</p>
+        </div>
+        <a class="btn-secondary" href="/settings">查看采集设置</a>
+      </header>
+
+      {% if session.state == 'logged_in' %}
+      <div class="banner ok">会话状态：已登录{% if session.nickname %}（{{ session.nickname }}）{% endif %}</div>
+      {% elif session.state == 'login_required' or session.state == 'empty' %}
+      <div class="banner bad">会话状态：需要登录 — {{ session.message }}</div>
+      {% elif session.state == 'profile_present' %}
+      <div class="banner warn">会话状态：已有配置目录，建议 dry-run 验证 — {{ session.message }}</div>
+      {% else %}
+      <div class="banner info">会话状态：{{ session.message }}</div>
+      {% endif %}
+
+      <section class="panel">
+        <h2 style="margin:0 0 12px;font-size:1rem;">会话信息</h2>
+        <div class="status-card">
+          <div class="kv"><div class="k">配置目录</div><div class="v mono">{{ session.user_data_dir }}</div></div>
+          <div class="kv"><div class="k">配置是否有内容</div><div class="v">{% if session.profile_has_content %}是{% else %}否（空）{% endif %}</div></div>
+          <div class="kv"><div class="k">配置最近修改</div><div class="v">{{ session.profile_mtime or "—" }}</div></div>
+          <div class="kv"><div class="k">最近采集成功</div><div class="v">{{ session.last_collect_success_at or "—" }}</div></div>
+          <div class="kv"><div class="k">COLLECTOR_BACKEND</div><div class="v mono">{{ session.collector_backend }}</div></div>
+          <div class="kv"><div class="k">GOOFISH_HEADLESS</div><div class="v mono">{{ session.headless }}</div></div>
+          <div class="kv"><div class="k">Fixture</div><div class="v mono">{{ session.fixture_path or "（未设置，走真扫）" }}</div></div>
+          <div class="kv"><div class="k">探测结果</div><div class="v">{% if session.probe %}{{ session.probe.get('message') or session.probe.get('method') }}{% else %}未探测{% endif %}</div></div>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn-primary" id="btn-open-login">尝试打开登录窗口</button>
+          <button type="button" class="btn-secondary" id="btn-refresh">刷新状态</button>
+          <a class="btn-secondary" href="/api/accounts/goofish/status?probe=true" target="_blank">JSON 状态</a>
+        </div>
+        <p id="login-msg" class="field-hint" style="margin-top:12px;"></p>
+      </section>
+
+      <section class="panel" style="margin-top:16px;">
+        <h2 style="margin:0 0 12px;font-size:1rem;">首次登录（推荐）</h2>
+        <ol class="steps">
+          <li>在<strong>有图形界面</strong>的机器（本机桌面 / VNC / SSH -X）进入项目目录并激活 venv。</li>
+          <li>执行登录脚本（会强制有头浏览器，写入持久化配置）：</li>
+        </ol>
+        <pre class="pre-cmd">cd {{ project_root }}
+source .venv/bin/activate
+playwright install chromium   # 若尚未安装
+python -m app.scripts.login_goofish</pre>
+        <ol class="steps" start="3" style="margin-top:12px;">
+          <li>在弹出的 Chromium 中登录闲鱼，直到脚本提示成功并退出。</li>
+          <li>云主机无桌面时：在本地登录后，把 <code>data/browser_profile/</code> 同步到服务器同路径。</li>
+          <li>设置 <code>COLLECTOR_BACKEND=playwright</code>，<strong>不要</strong>设置 <code>GOOFISH_FIXTURE_PATH</code>，启动服务并 resume 任务即可 24h 定时真扫。</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+  <script>
+    const msg = document.getElementById('login-msg');
+    document.getElementById('btn-refresh').addEventListener('click', () => location.reload());
+    document.getElementById('btn-open-login').addEventListener('click', async () => {
+      msg.textContent = '请求中…';
+      try {
+        const r = await fetch('/api/accounts/goofish/open-login', { method: 'POST' });
+        const data = await r.json();
+        msg.textContent = (data.message || JSON.stringify(data));
+        if (data.mode === 'headed_started' || data.mode === 'headed_running') {
+          msg.textContent += ' — 完成后点「刷新状态」。';
+        }
+      } catch (e) {
+        msg.textContent = '请求失败：' + e;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title }} · Goofish Monitor</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="brand-text">Goofish</div>
+          <div class="brand-sub">Monitor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/" class="{% if active_nav == 'overview' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </span>
+          监控概览
+        </a>
+        <a href="/tasks" class="{% if active_nav == 'tasks' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </span>
+          任务管理
+        </a>
+        <a href="/accounts" class="{% if active_nav == 'accounts' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          账号管理
+        </a>
+        <a href="/results" class="{% if active_nav == 'results' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          结果查看
+        </a>
+        <a href="/logs" class="{% if active_nav == 'logs' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>
+          </span>
+          运行日志
+        </a>
+        <a href="/settings" class="{% if active_nav == 'settings' %}active{% endif %}">
+          <span class="ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </span>
+          系统设置
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-label">系统状态</div>
+        <div class="status-pill">
+          <span class="dot{% if not backend_connected %} off{% endif %}"></span>
+          {% if backend_connected %}后端实时已连接{% else %}后端未连接{% endif %}
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <div class="title-row">
+            <span class="title-ico" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </span>
+            <h1>{{ page_title }}</h1>
+          </div>
+          <p class="subtitle">{{ page_subtitle }}</p>
+        </div>
+        <a class="btn-secondary" href="/">← 返回概览</a>
+      </header>
+
+      <section class="panel">
+        {% if coming_soon %}
+        <div class="coming-soon">
+          <div class="big">即将开放</div>
+          <div>{{ page_title }} 功能仍在完善中，请先使用监控概览与 API。</div>
+        </div>
+        {% elif show_docs_cta is defined and show_docs_cta %}
+        <div class="coming-soon">
+          <div class="big">通过 API 创建监测</div>
+          <div style="margin-bottom:16px;">先 POST <code>/api/configs</code> 创建商品配置，再 POST <code>/api/tasks</code> 启动任务。</div>
+          <a class="btn-primary" href="/docs">打开 API 文档</a>
+        </div>
+        {% elif items %}
+        <ul class="simple-list">
+          {% for it in items %}
+          <li>
+            <div>
+              <div style="font-weight:650;">{{ it.name }}</div>
+              <div style="font-size:0.8rem;color:#64748b;margin-top:2px;">
+                {% if it.keyword %}{{ it.keyword }}{% endif %}
+                {% if it.interval_minutes %} · 间隔 {{ it.interval_minutes }} 分钟{% endif %}
+                {% if it.last_run_at %} · 最近 {{ it.last_run_at }}{% endif %}
+              </div>
+            </div>
+            {% if it.status %}
+              {% if it.status == "running" %}
+              <span class="badge running">运行中</span>
+              {% elif it.status == "error" %}
+              <span class="badge error">异常</span>
+              {% elif it.status == "paused" %}
+              <span class="badge paused">已暂停</span>
+              {% elif it.status == "推荐" %}
+              <span class="badge running">推荐</span>
+              {% elif it.status == "待观察" %}
+              <span class="badge level-warn">待观察</span>
+              {% elif it.status == "不推荐" %}
+              <span class="badge error">不推荐</span>
+              {% else %}
+              <span class="badge paused">{{ it.status }}</span>
+              {% endif %}
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-panel">{{ empty_hint or "暂无数据" }}</div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+</body>
+</html>
